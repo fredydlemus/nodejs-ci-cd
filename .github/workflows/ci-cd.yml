@@ -5,7 +5,23 @@ on:
     pull_request:
         branches : [main]
 jobs:
+    setup:
+        runs-on: ubuntu-latest
+        steps:
+          - name: Checkout code
+            uses: actions/checkout@v2
+          - name: Set up Terraform
+            uses: hashicorp/setup-terraform@v1
+            with:
+              terraform_version: 1.0.0
+          - name: Initialize Terraform
+            working-directory: ./infrastructure
+            run: terraform init
+          - name: Apply Terraform
+            working-directory: ./infrastructure
+            run: terraform apply -auto-approve
     build:
+        needs: setup
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
@@ -20,3 +36,5 @@ jobs:
               run: npm test
             - name: Build application
               run: npm run build
+            - name: Zip artifact
+              run: zip -r artifact.zip *
